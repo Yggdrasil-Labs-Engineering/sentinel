@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "overwatch-sentinel"
+version = "0.1.0"
+description = "Rapid API operational readiness and smoke testing utility."
+readme = "README.md"
+requires-python = ">=3.12"
+
+authors = [
+    { name = "Larry Luna" }
+]
+
+license = { file = "LICENSE" }
+
+keywords = [
+    "api",
+    "testing",
+    "smoke-test",
+    "qa",
+    "cybersecurity",
+    "rest",
+    "overwatch",
+    "sentinel"
+]
+
+dependencies = [
+    "PySide6",
+    "requests",
+    "PyYAML",
+    "Jinja2"
+]
+
+[project.urls]
+Homepage = "https://yggdrasil-labs.github.io"
+Repository = "https://github.com/Yggdrasil-Labs/overwatch-sentinel"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
