@@ -29,6 +29,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QVBoxLayout,
 )
+from PySide6.QtGui import QFont
 
 
 class ConfigurationPanel(QFrame):
@@ -105,14 +106,31 @@ class ConfigurationPanel(QFrame):
             "Run Smoke Test"
         )
 
+        # Make the button larger
+        self.run_button.setMinimumWidth(260)
+        self.run_button.setMinimumHeight(44)
+
+        #-------------------------------------------------
+        # Button Font
+        #-------------------------------------------------
+
+        button_font = QFont()
+
+        button_font.setPointSize(11)
+
+        button_font.setBold(True)
+
+        self.run_button.setFont(button_font)
+
         layout.addWidget(
-            self.run_button,
+            self.run_button, 
             alignment=Qt.AlignCenter
         )
 
+
         self.setLayout(layout)
 
-    def configuration(self):
+    def get_configuration(self) -> dict:
         """
         Returns the current configuration.
 
@@ -124,10 +142,10 @@ class ConfigurationPanel(QFrame):
 
         return {
 
-            "url": self.url_input.text(),
+            "url": self.url_input.text().strip(),
 
-            "username": self.username_input.text(),
+            "username": self.username_input.text().strip(),
 
-            "password": self.password_input.text(),
+            "password": self.password_input.text()
 
         }

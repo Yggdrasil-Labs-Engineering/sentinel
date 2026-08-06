@@ -20,6 +20,10 @@ scaling, and displaying the banner image.
 
 from pathlib import Path
 
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
+
+BANNER_PATH = (PROJECT_ROOT / "assets" / "sentinel-hero-banner.png")
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QLabel
@@ -61,7 +65,7 @@ class HeroBanner(QWidget):
             / "sentinel-hero-banner.png"
         )
 
-        pixmap = QPixmap(str(banner_path))
+        pixmap = QPixmap(str(BANNER_PATH))
 
         if not pixmap.isNull():
 
