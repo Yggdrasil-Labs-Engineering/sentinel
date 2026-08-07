@@ -21,6 +21,12 @@ own execution.
 =========================================================
 """
 
+import time
+
+from datetime import datetime
+
+from sentinel.models.smoke_result import SmokeResult 
+
 from sentinel.checks.authentication_check import AuthenticationCheck
 from sentinel.checks.endpoint_check import EndpointCheck
 from sentinel.checks.health_check import HealthCheck
@@ -44,15 +50,54 @@ class SmokeEngine:
 
         self.password = password
 
+    def _build_result(
+        self, 
+        results, 
+        start, 
+    ):
+        """
+        Build a SmokeResult from the executed checks. 
+        """
+
+        duration_ms = (
+            time.perf_counter() - start
+        ) * 1000
+
+        passed = sum(
+            result.passed
+            for result in results
+        )
+
+        failed = len(results) - passed
+
+        return SmokeResult(
+
+            checks=results, 
+
+            passed=passed, 
+
+            failed=failed, 
+
+            duration_ms=duration_ms, 
+
+            timestamp=datetime.now(),
+
+            overall_passed=(failed == 0),
+            
+        )
+
     def execute(self):
+        
         """
         Execute the Sentinel smoke test sequence.
 
         Returns
         -------
-        list
-            List of CheckResult objects.
+        SmokeResult
+            Results of the complete smoke test execution.
         """
+
+        start = time.perf_counter()
 
         results = []
 
@@ -71,7 +116,10 @@ class SmokeEngine:
         )
 
         if not health_result.passed:
-            return results
+            return self._build_result(
+                results, 
+                start, 
+            )  
 
         # -------------------------------------------------
         # Authentication
@@ -94,7 +142,10 @@ class SmokeEngine:
         )
 
         if not auth_result.passed:
-            return results
+            return self._build_result(
+                results, 
+                start, 
+            )
 
         # -------------------------------------------------
         # Endpoint Validation
@@ -116,4 +167,7 @@ class SmokeEngine:
             endpoint_result
         )
 
-        return results
+        return self._build_result(
+            results, 
+            start, 
+        )

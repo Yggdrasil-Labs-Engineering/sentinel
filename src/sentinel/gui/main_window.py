@@ -168,48 +168,25 @@ class MainWindow(QMainWindow):
             central_widget
         )
 
-    def _run_smoke_test(self):
-
+    def _run_smoke_test(self): 
         """
-
-        Execute the Sentinel smoke test. 
-
+        Execute the Sentinel smoke test.
         """
-
+        
         config = self.configuration_panel.get_configuration()
-
+        
         engine = SmokeEngine(
-
+            
             base_url=config["url"],
-
+            
             username=config["username"],
-
-            password=config["password"],
+            
+            password=config["password"], 
         )
-
-        results = engine.execute()
-
-        print("\n==============================")
-        print(" Sentinel Results")
-        print("==============================")
-
-        for result in results:
-
-            status = "PASS" if result.passed else "FAIL"
-
-            print(f"[{status}] {result.name}")
-
-            print (f"  Message       :  {result.message}")
-
-            if result.status_code is not None: 
-
-                print(f" HTTP        :  {result.status_code}")
-
-            if result.duration_ms is not None:
-
-                print(f" Duration    :  {result.duration_ms:.2f} ms")
-
-            print() 
-
-
-    
+        
+        smoke_result = engine.execute()
+        
+        self.results_panel.display_results(
+            smoke_result
+        )
+        
