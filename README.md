@@ -311,6 +311,13 @@ Engineering is not simply writing software.
 
 Engineering is building software that people can trust.
 
+
+---
+
+### Recent Update
+
+Minor documentation update.
+
 ---
 
 # License
