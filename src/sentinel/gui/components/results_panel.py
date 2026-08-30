@@ -78,9 +78,7 @@ class ResultsPanel(QFrame):
 
         self.console.setReadOnly(True)
 
-        self.console.setPlaceholderText(
-            "Waiting for smoke test..."
-        )
+        self.console.setPlaceholderText("Waiting for smoke test...")
 
         layout.addWidget(self.console)
 
@@ -127,56 +125,118 @@ class ResultsPanel(QFrame):
 
         self.clear_results()
 
-        overall = (
-            "PASS"
-            if smoke_result.overall_passed
-            else "FAIL"
+        overall = "🟢 PASS" if smoke_result.overall_passed else "🔴 FAIL"
+
+        self.update_status(overall)
+
+        self._display_header()
+
+        self._display_summary(
+            smoke_result,
+            overall,
         )
 
-        self.update_status(
-            f"Overall Result: {overall}"
+        self._display_checks(
+            smoke_result,
         )
 
-        self.console.append(
-            f"Passed   : {smoke_result.passed}"
+        self._display_footer(
+            smoke_result,
         )
 
-        self.console.append(
-            f"Failed   : {smoke_result.failed}"
-        )
+    # =====================================================
+    # Private Methods
+    # =====================================================
 
-        self.console.append(
-            f"Duration : {smoke_result.duration_ms:.2f} ms"
-        )
+    def _display_header(self):
+        """
+        Display the report header.
+        """
+
+        self.console.append("=" * 50)
+
+        self.console.append("OVERWATCH Sentinel Smoke Test Report")
+
+        self.console.append("=" * 50)
 
         self.console.append("")
 
+    def _display_summary(
+        self,
+        smoke_result: SmokeResult,
+        overall: str,
+    ):
+        """
+        Display the smoke test summary.
+        """
+
+        self.console.append(f"Overall Result : {overall}")
+
+        self.console.append(f"Checks Passed  : {smoke_result.passed}")
+
+        self.console.append(f"Checks Failed  : {smoke_result.failed}")
+
+        self.console.append(f"Execution Time : " f"{smoke_result.duration_ms:.2f} ms")
+
+        self.console.append("")
+
+        self.console.append("-" * 50)
+
+        self.console.append("Execution Results")
+
+        self.console.append("-" * 50)
+
+        self.console.append("")
+
+    def _display_checks(
+        self,
+        smoke_result: SmokeResult,
+    ):
+        """
+        Display all executed checks.
+        """
+
         for result in smoke_result.checks:
 
-            status = (
-                "PASS"
-                if result.passed
-                else "FAIL"
-            )
+            self._display_check(result)
 
-            self.console.append(
-                f"[{status}] {result.name}"
-            )
+    from sentinel.models.check_result import CheckResult
 
-            self.console.append(
-                f"    Message : {result.message}"
-            )
+    def _display_check(
+        self,
+        result,
+    ):
+        """
+        Display an individual check.
+        """
 
-            if result.status_code is not None:
+        status = "🟢 PASS" if result.passed else "🔴 FAIL"
 
-                self.console.append(
-                    f"    HTTP    : {result.status_code}"
-                )
+        self.console.append(f"[{status}] {result.name}")
 
-            if result.duration_ms is not None:
+        self.console.append(f"   Message  : {result.message}")
 
-                self.console.append(
-                    f"    Time    : {result.duration_ms:.2f} ms"
-                )
+        if result.status_code is not None:
 
-            self.console.append("")
+            self.console.append(f"   HTTP Status : " f"{result.status_code}")
+
+        if result.duration_ms is not None:
+
+            self.console.append(f"   Response Time : " f"{result.duration_ms:.2f} ms")
+
+        self.console.append("")
+
+        self.console.append("-" * 50)
+
+        self.console.append("")
+
+    def _display_footer(
+        self,
+        smoke_result: SmokeResult,
+    ):
+        """
+        Display the report footer.
+        """
+        self.console.append("")
+
+        self.console.append(f"Report Generated Successfully")
