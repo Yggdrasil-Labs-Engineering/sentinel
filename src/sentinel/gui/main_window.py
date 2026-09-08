@@ -35,6 +35,7 @@ from sentinel.gui.components.configuration_panel import ConfigurationPanel
 from sentinel.gui.components.footer import Footer
 from sentinel.gui.components.hero_banner import HeroBanner
 from sentinel.gui.components.results_panel import ResultsPanel
+from sentinel.gui.components.status_cards_panel import StatusCardsPanel
 from sentinel.gui.menu_bar import SentinelMenuBar
 
 from sentinel.gui.resources import (
@@ -125,6 +126,14 @@ class MainWindow(QMainWindow):
         self.configuration_panel = ConfigurationPanel()
 
         layout.addWidget(self.configuration_panel)
+
+        # -------------------------------------------------
+        # Status Cards Panel
+        # -------------------------------------------------
+
+        self.status_cards_panel = StatusCardsPanel()
+
+        layout.addWidget(self.status_cards_panel)
 
         # -------------------------------------------------
         # Connect Events
