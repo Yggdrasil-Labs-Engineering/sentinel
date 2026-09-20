@@ -42,6 +42,7 @@ class SmokeEngine:
         base_url: str,
         username: str,
         password: str,
+        progress_callback=None,
     ):
 
         self.base_url = base_url.rstrip("/")
@@ -49,6 +50,12 @@ class SmokeEngine:
         self.username = username
 
         self.password = password
+
+        # -------------------------------------------------
+        # Progress Callback
+        # -------------------------------------------------
+
+        self.progress_callback = progress_callback
 
     def _build_result(
         self,
@@ -74,6 +81,24 @@ class SmokeEngine:
             overall_passed=(failed == 0),
         )
 
+    def _report_progress(
+        self,
+        check_name: str,
+        status: str,
+    ):
+        """
+        Report smoke test progress to interested listeners.
+
+        The SmokeEngine does not know who receives these updates. It simply
+        repots operational progress as checks execute.
+        """
+
+        if self.progress_callback is not None:
+            self.progress_callback(
+                check_name,
+                status,
+            )
+
     def execute(self):
         """
         Execute the Sentinel smoke test sequence.
@@ -92,9 +117,28 @@ class SmokeEngine:
         # Connectivivty Check
         # -------------------------------------------------
 
+        self._report_progress(
+            "connectivity",
+            "running",
+        )
+
         connectivity = ConnectivityCheck(self.base_url)
 
         connectivity_result = connectivity.execute()
+
+        if connectivity_result.passed:
+
+            self._report_progress(
+                "connectivity",
+                "pass",
+            )
+
+        else:
+
+            self._report_progress(
+                "connectivity",
+                "fail",
+            )
 
         results.append(connectivity_result)
 
@@ -117,6 +161,11 @@ class SmokeEngine:
         # Authentication
         # -------------------------------------------------
 
+        self._report_progress(
+            "authentication",
+            "running",
+        )
+
         auth = AuthenticationCheck(
             f"{self.base_url}/login",
             self.username,
@@ -125,17 +174,29 @@ class SmokeEngine:
 
         auth_result = auth.execute()
 
-        results.append(auth_result)
-
         if not auth_result.passed:
-            return self._build_result(
-                results,
-                start,
+
+            self._report_progress(
+                "authentication",
+                "fail",
             )
+
+            results.append(auth_result)
+
+            if not auth_result.passed:
+                return self._build_result(
+                    results,
+                    start,
+                )
 
         # -------------------------------------------------
         # Endpoint Validation
         # -------------------------------------------------
+
+        self._report_progress(
+            "endpoint",
+            "running",
+        )
 
         endpoint = EndpointCheck(
             name="Users Endpoint",
@@ -145,9 +206,18 @@ class SmokeEngine:
 
         endpoint_result = endpoint.execute()
 
-        results.append(endpoint_result)
+        if endpoint_result.passed:
 
-        return self._build_result(
-            results,
-            start,
-        )
+            self._report_progress(
+                "endpoint",
+                "pass",
+            )
+
+        else:
+
+            self._report_progress(
+                "endpoint",
+                "fail",
+            )
+
+        results.append(endpoint_result)

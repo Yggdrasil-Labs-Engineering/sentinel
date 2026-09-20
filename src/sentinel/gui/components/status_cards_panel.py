@@ -114,6 +114,8 @@ class StatusCardsPanel(QFrame):
                     - fail
         """
 
+        print(f"update_card(): {card_name} -> {status}")
+
         card = self._cards.get(card_name)
 
         if card is None:

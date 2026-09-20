@@ -190,6 +190,12 @@ class MainWindow(QMainWindow):
         self.results_panel.append_message("Initializing smoke test...")
 
         # -------------------------------------------------
+        # Reset Status Dashboard
+        # -------------------------------------------------
+
+        self.status_cards_panel.reset()
+
+        # -------------------------------------------------
         # Prevent multiple executions
         # -------------------------------------------------
 
@@ -259,6 +265,7 @@ class MainWindow(QMainWindow):
             base_url=config["url"],
             username=config["username"],
             password=config["password"],
+            progress_callback=self.status_cards_panel.update_card,
         )
 
         # -------------------------------------------------
@@ -274,9 +281,28 @@ class MainWindow(QMainWindow):
 
             self.results_panel.display_results(smoke_result)
 
-            if smoke_result.overall_passed:
+            # -------------------------------------------------
+            # Update Overall Status
+            # -------------------------------------------------
+
+            overall_passed = smoke_result.overall_passed
+
+            if overall_passed:
+
+                self.status_cards_panel.update_card(
+                    "overall",
+                    "pass",
+                )
+
                 self.statusBar().showMessage("🟢 Smoke Test Passed")
+
             else:
+
+                self.status_cards_panel.update_card(
+                    "overall",
+                    "fail",
+                )
+
                 self.statusBar().showMessage("🔴 Smoke Test Failed")
 
         except Exception as ex:
