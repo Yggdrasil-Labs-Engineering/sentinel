@@ -21,7 +21,7 @@ Business logic belongs elsewhere.
 =========================================================
 """
 
-from sentinel.engine.smoke_engine import SmokeEngine
+from urllib.parse import urlparse
 
 from PySide6.QtWidgets import (
     QMainWindow,
@@ -29,8 +29,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from urllib.parse import urlparse
-
+from sentinel.engine.smoke_engine import SmokeEngine
 from sentinel.gui.components.configuration_panel import ConfigurationPanel
 from sentinel.gui.components.footer import Footer
 from sentinel.gui.components.hero_banner import HeroBanner
@@ -84,8 +83,6 @@ class MainWindow(QMainWindow):
         self.menu_bar = SentinelMenuBar(self)
 
         self.setMenuBar(self.menu_bar)
-
-        # Connect menu actions
 
         self.menu_bar.exit_action.triggered.connect(self.close)
 
@@ -147,7 +144,10 @@ class MainWindow(QMainWindow):
 
         self.results_panel = ResultsPanel()
 
-        layout.addWidget(self.results_panel)
+        layout.addWidget(
+            self.results_panel,
+            stretch=1,
+        )
 
         # -------------------------------------------------
         # Footer
@@ -179,11 +179,10 @@ class MainWindow(QMainWindow):
         """
 
         # -------------------------------------------------
-
         # Prepare Results Panel
         # -------------------------------------------------
 
-        self.results_panel.clear_results()
+        self.results_panel.start_run()
 
         self.results_panel.update_status("🔵 Running Smoke Test...")
 
@@ -196,10 +195,11 @@ class MainWindow(QMainWindow):
         self.status_cards_panel.reset()
 
         # -------------------------------------------------
-        # Prevent multiple executions
+        # Prevent Multiple Executions
         # -------------------------------------------------
 
         self.configuration_panel.run_button.setEnabled(False)
+
         self.configuration_panel.run_button.setText("Running...")
 
         # -------------------------------------------------
@@ -214,12 +214,10 @@ class MainWindow(QMainWindow):
 
         if not config["url"]:
 
-            self.results_panel.clear_results()
-
             self.results_panel.update_status("🟡 Validation Failed")
 
             self.results_panel.append_message(
-                "Target URL is required before a smoke test can be executed."
+                "Target URL is required before " "a smoke test can be executed."
             )
 
             self.statusBar().showMessage("🟡 Target URL Required")
@@ -235,8 +233,6 @@ class MainWindow(QMainWindow):
         # -------------------------------------------------
 
         if not self._is_valid_url(config["url"]):
-
-            self.results_panel.clear_results()
 
             self.results_panel.update_status("🟡 Validation Failed")
 
@@ -257,6 +253,7 @@ class MainWindow(QMainWindow):
             self.configuration_panel.run_button.setText("Run Smoke Test")
 
             return
+
         # -------------------------------------------------
         # Create Smoke Engine
         # -------------------------------------------------
@@ -265,7 +262,8 @@ class MainWindow(QMainWindow):
             base_url=config["url"],
             username=config["username"],
             password=config["password"],
-            progress_callback=self.status_cards_panel.update_card,
+            endpoint_path=config["endpoint_path"],
+            progress_callback=(self.status_cards_panel.update_card),
         )
 
         # -------------------------------------------------
@@ -273,6 +271,7 @@ class MainWindow(QMainWindow):
         # -------------------------------------------------
 
         try:
+
             smoke_result = engine.execute()
 
             # -------------------------------------------------
@@ -306,8 +305,6 @@ class MainWindow(QMainWindow):
                 self.statusBar().showMessage("🔴 Smoke Test Failed")
 
         except Exception as ex:
-
-            self.results_panel.clear_results()
 
             self.results_panel.update_status("🔴 Smoke Test Failed")
 

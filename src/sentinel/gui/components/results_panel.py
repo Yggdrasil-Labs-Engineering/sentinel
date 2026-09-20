@@ -15,16 +15,22 @@ Sentinel smoke tests.
 Responsibilities:
 - Display smoke test status.
 - Display execution results.
+- Preserve session run history.
+- Allow displayed results to be cleared.
 - Display operational messages.
 
 This panel is responsible only for presentation.
 =========================================================
 """
 
+from datetime import datetime
+
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QFrame,
+    QHBoxLayout,
     QLabel,
+    QPushButton,
     QTextEdit,
     QVBoxLayout,
 )
@@ -34,7 +40,7 @@ from sentinel.models.smoke_result import SmokeResult
 
 class ResultsPanel(QFrame):
     """
-    Displays smoke test results.
+    Displays smoke test results and session history.
     """
 
     def __init__(self):
@@ -56,10 +62,21 @@ class ResultsPanel(QFrame):
         # Header
         # -------------------------------------------------
 
+        header_layout = QHBoxLayout()
+
         header = QLabel("Results")
         header.setAlignment(Qt.AlignLeft)
 
-        layout.addWidget(header)
+        self.clear_button = QPushButton("Clear Results")
+        self.clear_button.clicked.connect(self.clear_results)
+
+        header_layout.addWidget(header)
+
+        header_layout.addStretch()
+
+        header_layout.addWidget(self.clear_button)
+
+        layout.addLayout(header_layout)
 
         # -------------------------------------------------
         # Current Status
@@ -80,7 +97,16 @@ class ResultsPanel(QFrame):
 
         self.console.setPlaceholderText("Waiting for smoke test...")
 
-        layout.addWidget(self.console)
+        self.console.setLineWrapMode(QTextEdit.WidgetWidth)
+
+        self.console.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        self.console.setMinimumHeight(280)
+
+        layout.addWidget(
+            self.console,
+            stretch=1,
+        )
 
         self.setLayout(layout)
 
@@ -108,22 +134,47 @@ class ResultsPanel(QFrame):
 
         self.console.append(message)
 
+        self._scroll_to_latest()
+
+    def start_run(self):
+        """
+        Begin a new timestamped smoke-test run.
+        """
+
+        timestamp = datetime.now().strftime("%Y-%m-%d %I:%M:%S %p")
+
+        if self.console.toPlainText().strip():
+
+            self.console.append("")
+
+        self.console.append("────────────────────────────────────────")
+
+        self.console.append(f"Run Executed: {timestamp}")
+
+        self.console.append("────────────────────────────────────────")
+
+        self.console.append("")
+
+        self._scroll_to_latest()
+
     def clear_results(self):
         """
-        Clear all displayed results.
+        Clear displayed session history.
         """
 
         self.console.clear()
+
+        self.update_status("🟢 Ready")
 
     def display_results(
         self,
         smoke_result: SmokeResult,
     ):
         """
-        Display the results of a completed smoke test.
-        """
+        Append completed smoke-test results.
 
-        self.clear_results()
+        Existing session history is preserved.
+        """
 
         overall = "🟢 PASS" if smoke_result.overall_passed else "🔴 FAIL"
 
@@ -140,9 +191,9 @@ class ResultsPanel(QFrame):
             smoke_result,
         )
 
-        self._display_footer(
-            smoke_result,
-        )
+        self._display_footer()
+
+        self._scroll_to_latest()
 
     # =====================================================
     # Private Methods
@@ -153,11 +204,7 @@ class ResultsPanel(QFrame):
         Display the report header.
         """
 
-        self.console.append("=" * 50)
-
         self.console.append("OVERWATCH Sentinel Smoke Test Report")
-
-        self.console.append("=" * 50)
 
         self.console.append("")
 
@@ -167,7 +214,7 @@ class ResultsPanel(QFrame):
         overall: str,
     ):
         """
-        Display the smoke test summary.
+        Display the smoke-test summary.
         """
 
         self.console.append(f"Overall Result : {overall}")
@@ -180,11 +227,7 @@ class ResultsPanel(QFrame):
 
         self.console.append("")
 
-        self.console.append("-" * 50)
-
         self.console.append("Execution Results")
-
-        self.console.append("-" * 50)
 
         self.console.append("")
 
@@ -200,8 +243,6 @@ class ResultsPanel(QFrame):
 
             self._display_check(result)
 
-    from sentinel.models.check_result import CheckResult
-
     def _display_check(
         self,
         result,
@@ -214,29 +255,30 @@ class ResultsPanel(QFrame):
 
         self.console.append(f"[{status}] {result.name}")
 
-        self.console.append(f"   Message  : {result.message}")
+        self.console.append(f"Message: {result.message}")
 
         if result.status_code is not None:
 
-            self.console.append(f"   HTTP Status : " f"{result.status_code}")
+            self.console.append(f"HTTP Status: " f"{result.status_code}")
 
         if result.duration_ms is not None:
 
-            self.console.append(f"   Response Time : " f"{result.duration_ms:.2f} ms")
+            self.console.append(f"Response Time: " f"{result.duration_ms:.2f} ms")
 
         self.console.append("")
 
-        self.console.append("-" * 50)
-
-        self.console.append("")
-
-    def _display_footer(
-        self,
-        smoke_result: SmokeResult,
-    ):
+    def _display_footer(self):
         """
         Display the report footer.
         """
-        self.console.append("")
 
-        self.console.append(f"Report Generated Successfully")
+        self.console.append("Report Generated Successfully")
+
+    def _scroll_to_latest(self):
+        """
+        Scroll the console to the newest output.
+        """
+
+        scrollbar = self.console.verticalScrollBar()
+
+        scrollbar.setValue(scrollbar.maximum())

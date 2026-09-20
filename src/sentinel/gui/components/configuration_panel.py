@@ -71,6 +71,19 @@ class ConfigurationPanel(QFrame):
         )
 
         # -------------------------------------------------
+        # Endpoint Path
+        # -------------------------------------------------
+
+        self.endpoint_input = QLineEdit()
+        self.endpoint_input.setText("/users")
+        self.endpoint_input.setPlaceholderText("/users")
+
+        form.addRow(
+            "Endpoint Path:",
+            self.endpoint_input
+        )
+
+        # -------------------------------------------------
         # Username
         # -------------------------------------------------
 
@@ -143,6 +156,8 @@ class ConfigurationPanel(QFrame):
         return {
 
             "url": self.url_input.text().strip(),
+
+            "endpoint_path": self.endpoint_input.text().strip() or "/",
 
             "username": self.username_input.text().strip(),
 

@@ -8,319 +8,518 @@
 
 ![Sentinel](assets/sentinel-hero-banner.png)
 
+Sentinel is a lightweight desktop API smoke-testing utility. Give it a target API, run a small readiness suite, and get clear PASS / FAIL results with useful failure information.
 
-## Philosophy
-
-> Verify.
-
-> Do Not Repair.
-
----
-
-# Current Status
-
-Sentinel v0.1
-
-✅ Repository Established
-
-✅ Engineering Documentation
-
-✅ Product Definition
-
-🚧 Desktop Interface
-
-🚧 Operational Readiness Pipeline
-
-🚧 HTML Reporting
-
-🚧 crAPI Validation
-
----
-
-# Why Sentinel Exists
-
-Before an application can be functionally tested, performance tested, or security assessed, engineers must answer one simple question:
-
-> **Is the application healthy enough to continue testing?**
-
-That initial verification is often repetitive, manual, and inconsistent across engineering teams.
-
-Sentinel exists to automate that process.
-
-By validating authentication, endpoint availability, response integrity, and operational health, Sentinel provides immediate confidence that an application is ready for deeper testing.
-
-Sentinel is intentionally lightweight.
-
-Rather than replacing full testing frameworks, it provides rapid operational readiness validation that can be executed independently or as the first stage of the OVERWATCH assessment platform.
-
----
-
-# Mission
-
-Operational Readiness Verification.
-
-Immediate Engineering Confidence.
-
-Sentinel's mission is to provide fast, repeatable operational verification that allows engineers to identify critical failures before investing time in deeper testing activities.
-
-Every execution should answer one question:
-
-> **Is the application healthy enough to continue testing?**
-
----
-
-# Core Responsibilities
-
-Sentinel is responsible for:
-
-- API Smoke Testing
-- Authentication Validation
-- Health Endpoint Verification
-- HTTP Response Validation
-- JSON Payload Validation
-- Endpoint Availability Testing
-- Operational Status Reporting
-- HTML Report Generation
-- CI/CD Ready Exit Codes
-
----
-
-# Operational Readiness Pipeline
+Sentinel is designed for the fast development and QA feedback loop:
 
 ```text
-Application
-      │
-      ▼
-Authentication
-      │
-      ▼
-Health Verification
-      │
-      ▼
-Endpoint Validation
-      │
-      ▼
-Response Validation
-      │
-      ▼
-PASS / FAIL
-      │
-      ▼
-HTML Report
+Make a change
+    |
+    v
+Run Sentinel
+    |
+    v
+Review results
+    |
+    v
+Make another change
+    |
+    v
+Run again and compare
 ```
 
-Every assessment begins with operational readiness.
+> **Philosophy:** Observe. Validate. Report.
 
 ---
 
-# Operational Philosophy
+## v0.1.0 MVP
 
-Sentinel is built around one engineering principle:
+The Sentinel MVP demonstrates one workflow well:
 
-> **Automate repetitive validation so engineers can focus on solving problems.**
+```text
+API Target
+   |
+   v
+Validate Configuration
+   |
+   v
+Connectivity Check
+   |
+   +--> Optional Authentication Check
+   |
+   v
+Endpoint Check
+   |
+   v
+PASS / FAIL Results
+   |
+   v
+Immediate Operational Confidence
+```
 
-Operational readiness should always be:
+### Implemented
 
-- Fast
-- Reliable
-- Repeatable
-- Explainable
-- Lightweight
+- PySide6 desktop GUI
+- Target/base URL input
+- Configurable endpoint path
+- Connectivity validation against the target base URL
+- Optional username/password authentication through `/login`
+- Bearer-token endpoint request when authentication returns a token
+- Endpoint availability/status check
+- PASS / FAIL status cards
+- Human-readable execution results and response timing
+- Graceful handling of unreachable or malformed targets
+- Early stop after critical connectivity or authentication failure
+- Timestamped in-session run history
+- Previous results remain visible for quick comparison between runs
+- Clear Results control for starting a fresh visible session
+- Results panel automatically scrolls to the newest output
+- Wrapped results output without unnecessary horizontal scrolling
+- Repeatable automated tests using a local HTTP fixture
+- Positive and negative demo paths
 
-Operational readiness should be trusted enough to verify every deployment. 
+### Not implemented in v0.1.0
 
----
+These remain future enhancements and should not be interpreted as current capabilities:
 
-# Validation Engine
-
-Each Sentinel execution validates:
-
-- Authentication
-- Application Health
-- Critical API Endpoints
-- Expected HTTP Responses
-- JSON Payload Integrity
-- Endpoint Availability
-- Overall Operational Status
-
-The objective is immediate operational confidence.
-
----
-
-# Current Development Status
-
-## Current Phase
-
-🟢 Foundation
-
-### Completed
-
-- ✅ Repository Created
-- ✅ Engineering Standards
-- ✅ Product Definition
-- ✅ Documentation Framework
-- ✅ Architecture Planning
-
-### In Progress
-
-- ⬜ PySide6 Desktop Application
-- ⬜ Smoke Testing Engine
-- ⬜ HTML Reporting
-- ⬜ crAPI Integration
-
----
-
-# Roadmap
-
-## Phase 1 — Operational Readiness
-
-🔄 In Progress
-
-- Desktop GUI
-- Health Checks
-- Authentication
-- Endpoint Validation
-- HTML Reports
+- Persistent run history across application restarts
+- Saved test sessions
+- Run-to-run diff analysis
+- JSON payload/schema validation
+- Configurable endpoint suites
+- Configurable authentication profiles or OAuth
+- HTML report export
+- Console report export
+- CI exit codes
+- API contract validation
+- Security-oriented checks
+- HELHEIM Proving Grounds integration
+- YLE agent integration
 
 ---
 
-## Phase 2 — Advanced Smoke Testing
+## Architecture
 
-- Parallel Endpoint Validation
-- Response Time Metrics
-- Configuration Profiles
-- Enhanced Reporting
+Sentinel keeps desktop presentation separate from smoke-test behavior:
+
+```text
+PySide6 GUI
+    |
+    v
+Configuration
+    |
+    v
+SmokeEngine
+    |
+    +--> ConnectivityCheck
+    +--> AuthenticationCheck (optional)
+    +--> EndpointCheck
+    |
+    v
+CheckResult / SmokeResult
+    |
+    v
+Results Presentation
+```
+
+The GUI coordinates user interaction and presentation. It does not implement the HTTP smoke-test business logic.
+
+Session history is also presentation-only. Timestamping, retaining visible run output, scrolling, and clearing results do not alter `SmokeEngine` behavior.
 
 ---
 
-## Phase 3 — Platform Integration
+## Requirements
 
-- OVERWATCH Integration
-- GitHub Actions
-- Jenkins
-- Azure DevOps
-- CI/CD Support
+- Python 3.12+
+- PySide6
+- requests
+- PyYAML
+- Jinja2
 
----
+For development/testing:
 
-## Phase 4 — Enterprise Readiness
-
-- Plugin Architecture
-- JWT Validation
-- OAuth Support
-- Service Dependency Validation
-- Dashboard Integration
+- pytest
 
 ---
 
-# Repository Structure
+## Install
+
+From the repository root:
+
+```bash
+python -m venv .venv
+```
+
+Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -e .
+python -m pip install pytest
+```
+
+---
+
+## Run Sentinel
+
+From the repository root:
+
+```powershell
+python main.py
+```
+
+or:
+
+```powershell
+python -m sentinel.app
+```
+
+The application accepts:
+
+- **Target URL** — API base URL, such as `http://127.0.0.1:8765`
+- **Endpoint Path** — endpoint to validate, such as `/users`
+- **Username / Password** — optional; leave both blank to skip authentication
+
+If credentials are supplied, Sentinel currently authenticates with `POST /login` using:
+
+```json
+{
+  "username": "...",
+  "password": "..."
+}
+```
+
+A successful authentication response may return a JSON `token`, which Sentinel sends to the endpoint check as a Bearer token.
+
+---
+
+## Session History
+
+Sentinel preserves smoke-test output for the current application session so a developer or QA engineer can compare successive runs while making changes.
+
+Each run receives a local system timestamp:
+
+```text
+Run Executed: 2026-09-20 09:08:56 AM
+PASS
+
+Run Executed: 2026-09-20 09:09:10 AM
+FAIL - HTTP 404
+
+Run Executed: 2026-09-20 09:09:23 AM
+PASS
+```
+
+This supports a lightweight feedback workflow:
+
+```text
+Change API
+   |
+   v
+Run smoke test
+   |
+   v
+Inspect result
+   |
+   v
+Change API
+   |
+   v
+Run again
+   |
+   v
+Compare with previous run
+```
+
+The **Clear Results** button clears only the visible session history. It does not change Sentinel configuration or engine behavior.
+
+Run history is currently in-memory only and is not preserved after Sentinel exits.
+
+---
+
+## Repeatable Local Demonstration
+
+Sentinel includes a small local API specifically so the MVP can be demonstrated without depending on a public service or internet access.
+
+### 1. Start the demo API
+
+Open one terminal from the repository root:
+
+```powershell
+python demo\demo_api.py
+```
+
+The demo target runs at:
+
+```text
+http://127.0.0.1:8765
+```
+
+Keep this terminal running while demonstrating Sentinel.
+
+### 2. Start Sentinel
+
+Open a second terminal:
+
+```powershell
+python main.py
+```
+
+### Positive demo — no authentication
+
+Enter:
+
+```text
+Target URL:    http://127.0.0.1:8765
+Endpoint Path: /users
+Username:      [blank]
+Password:      [blank]
+```
+
+Expected outcome:
+
+- Connectivity: PASS
+- Authentication: Not Configured
+- Endpoint: PASS
+- Overall: PASS
+
+### Positive demo — authentication configured
+
+Enter:
+
+```text
+Target URL:    http://127.0.0.1:8765
+Endpoint Path: /users
+Username:      demo
+Password:      sentinel
+```
+
+Expected outcome:
+
+- Connectivity: PASS
+- Authentication: PASS
+- Endpoint: PASS
+- Overall: PASS
+
+### Negative demo — missing endpoint
+
+Enter:
+
+```text
+Target URL:    http://127.0.0.1:8765
+Endpoint Path: /missing
+Username:      [blank]
+Password:      [blank]
+```
+
+Expected outcome:
+
+- Connectivity: PASS
+- Authentication: Not Configured
+- Endpoint: FAIL
+- HTTP status: 404
+- Overall: FAIL
+- Sentinel remains running
+
+### Negative demo — failed authentication
+
+Enter:
+
+```text
+Target URL:    http://127.0.0.1:8765
+Endpoint Path: /users
+Username:      demo
+Password:      wrong
+```
+
+Expected outcome:
+
+- Connectivity: PASS
+- Authentication: FAIL
+- HTTP status: 401
+- Endpoint check is not executed
+- Overall: FAIL
+
+### Negative demo — target unavailable
+
+Stop the local demo API, then execute Sentinel against:
+
+```text
+http://127.0.0.1:8765
+```
+
+Expected outcome:
+
+- Connectivity: FAIL
+- Useful connection-refused message
+- Remaining dependent checks are not executed
+- Overall: FAIL
+- Sentinel remains running
+
+---
+
+## Suggested Demonstration Sequence
+
+For a short portfolio or interview demonstration:
+
+```text
+1. /users with no credentials          -> PASS
+2. /missing                            -> FAIL (404)
+3. /users                              -> PASS
+4. demo / wrong password               -> FAIL (401)
+5. demo / sentinel                     -> PASS
+```
+
+Because Sentinel retains timestamped results, the sequence remains visible in the Results panel and demonstrates both positive and negative QA thinking in one session.
+
+---
+
+## Automated Tests
+
+Run from the repository root:
+
+```powershell
+python -m pytest
+```
+
+Using `python -m pytest` is recommended on Windows because it ensures pytest runs with the same Python interpreter/environment being used by Sentinel.
+
+The current MVP test suite contains **11 automated tests** covering:
+
+- reachable target
+- malformed target
+- successful endpoint request
+- missing endpoint
+- successful authentication
+- failed authentication
+- optional authentication
+- incomplete authentication configuration
+- connectivity short-circuit behavior
+- successful complete smoke execution
+- failed complete smoke execution
+
+Verified MVP baseline:
+
+```text
+11 passed
+```
+
+---
+
+## Verified v0.1.0 Behavior
+
+The MVP has been manually exercised on Windows with the bundled local demo API.
+
+Verified paths:
+
+```text
+Successful unauthenticated run   PASS
+Successful authenticated run     PASS
+Unreachable target               PASS (expected failure handled cleanly)
+Missing endpoint / HTTP 404       PASS (expected failure handled cleanly)
+Invalid credentials / HTTP 401    PASS (expected failure handled cleanly)
+Timestamped session history       PASS
+Clear Results                     PASS
+Automated test suite              11/11 PASS
+```
+
+Here, `PASS (expected failure handled cleanly)` means Sentinel correctly detected and reported the negative condition without crashing.
+
+---
+
+## Repository Structure
 
 ```text
 overwatch-sentinel/
-
-├── src/
-├── tests/
-├── docs/
 ├── assets/
-├── config/
-├── examples/
+├── demo/
+│   └── demo_api.py
+├── docs/
+├── src/
+│   └── sentinel/
+│       ├── checks/
+│       ├── engine/
+│       ├── gui/
+│       ├── models/
+│       └── widgets/
+├── tests/
+├── main.py
 ├── README.md
 ├── PRODUCT.md
-├── LICENSE
+├── CHANGELOG.md
 └── pyproject.toml
 ```
 
 ---
 
-# Technology Stack
+## Windows Packaging
 
-| Technology | Purpose |
-|------------|---------|
-| Python | Core Application |
-| PySide6 | Desktop Interface |
-| Requests | REST Communication |
-| PyYAML | Configuration |
-| Jinja2 | HTML Reporting |
-| GitHub | Version Control |
+Windows packaging intentionally comes after core MVP verification.
 
-### Future Technologies
+The intended deliverable is:
 
-- Docker
-- GitHub Actions
-- Azure DevOps
-- Jenkins
-- OpenAPI Support
+```text
+Sentinel.exe
+    |
+    v
+Existing PySide6 GUI
+    |
+    v
+Existing SmokeEngine
+```
 
----
+Packaging must remain a thin deployment layer. Smoke-test behavior will not be duplicated inside packaging-specific code.
 
-# How Sentinel Fits Into OVERWATCH
+A PyInstaller build is the planned next deployment step now that:
 
-Sentinel verifies.
-
-Inspector discovers.
-
-Observer monitors.
-
-Intelligence analyzes.
-
-Odin decides.
-
-Forge constructs.
-
-Dashboard informs.
-
-Operational confidence begins with Sentinel.
+- core behavior is working
+- positive and negative GUI paths are verified
+- session-history behavior is verified
+- the automated test suite is green
 
 ---
 
-# Related Projects
+## Future Direction
 
-🌳 **Yggdrasil Labs Engineering**  
-Engineering philosophy and organizational standards.
+Sentinel may later grow into a richer API operational-readiness utility while preserving the same small-core architecture.
 
-🛡 **OVERWATCH Platform**  
-Operational intelligence and API assessment ecosystem.
+Potential future capabilities include:
 
-🛡 **Inspector**  
-API discovery and inventory.
+- persistent test sessions
+- exportable run history
+- run-to-run comparison
+- JSON payload validation
+- configurable endpoint suites
+- authentication profiles
+- HTML reports
+- console reports
+- CI exit codes
+- API contract checks
+- security-oriented validation
+- HELHEIM Proving Grounds integration
+- future YLE agent integration
 
-👁 **Observer**  
-Operational monitoring and telemetry.
-
-🧠 **Intelligence Engine**  
-Context-aware analysis and risk evaluation.
-
-⚖ **Odin**  
-Explainable operational decision engine.
-
-🔨 **Forge**  
-Operational remediation construction engine.
-
-📊 **OVERWATCH Dashboard**  
-Operational visualization and reporting.
+These are roadmap concepts, not v0.1.0 capabilities.
 
 ---
 
-# Engineering Philosophy
+## Engineering Standard
 
-Sentinel follows the engineering principles established by **Yggdrasil Labs Engineering**.
+Sentinel follows the Yggdrasil Labs Engineering principle:
 
-We believe software should be:
+> **Wisdom Before Action.**
 
-- Practical
-- Maintainable
-- Modular
-- Well Documented
-- Tested
-- Built for Engineers
+And the product standard:
 
-Engineering is not simply writing software.
+> **“This made my job easier.”**
 
-Engineering is building software that people can trust.
+Sentinel is not intended to replace a full API testing framework or regression suite. Its job is to answer a smaller question quickly and clearly:
 
+> **Is this API operationally ready for deeper testing?**
 
 ---
 
-# License
+## License
 
-Released under the **MIT License**.
+MIT License. See [LICENSE](LICENSE).
