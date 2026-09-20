@@ -18,11 +18,25 @@ scaling, and displaying the banner image.
 =========================================================
 """
 
+import sys
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[4]
 
-BANNER_PATH = (PROJECT_ROOT / "assets" / "sentinel-hero-banner.png")
+def _resource_path(relative_path: str) -> Path:
+    """
+    Resolve an application resource path.
+
+    Supports both normal source execution and
+    PyInstaller-packaged execution.
+    """
+
+    if hasattr(sys, "_MEIPASS"):
+        return Path(sys._MEIPASS) / relative_path
+
+    return Path(__file__).resolve().parents[4] / relative_path
+
+
+BANNER_PATH = _resource_path("assets/sentinel-hero-banner.png")
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
@@ -57,14 +71,6 @@ class HeroBanner(QWidget):
         banner = QLabel()
         banner.setAlignment(Qt.AlignCenter)
 
-        banner_path = (
-            Path(__file__)
-            .resolve()
-            .parents[3]
-            / "assets"
-            / "sentinel-hero-banner.png"
-        )
-
         pixmap = QPixmap(str(BANNER_PATH))
 
         if not pixmap.isNull():
@@ -79,10 +85,11 @@ class HeroBanner(QWidget):
             )
 
         else:
-
             banner.setText(
                 "OVERWATCH Sentinel\n"
-                "Hero Banner Missing"
+                "Hero Banner Missing\n\n"
+                f"Path: {BANNER_PATH}\n"
+                f"Exists: {BANNER_PATH.exists()}"
             )
 
         layout.addWidget(banner)
